@@ -51,7 +51,6 @@ export function Card(props: PaperProps) {
 
   const handleNextQuestion = () => {
     setQuestion((prev) => (prev + 1) % questions.length);
-    setSeconds(5);
   };
 
   const handleAnswerChange = (answer: string) => {
