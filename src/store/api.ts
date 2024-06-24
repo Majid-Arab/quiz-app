@@ -5,7 +5,7 @@ export type Question = {
   question: string;
   correct_answer: string;
   incorrect_answers: string[];
-  answers?: string | null;
+  answers?: string[] | null;
 };
 
 let cache: Question[] = [];
@@ -17,12 +17,12 @@ const fetchQuestion = async (): Promise<Question[]> => {
 
   let attempt = 0;
   const maxAttempts = 5;
-  const retryDelay = 2000; // 2 seconds
+  const retryDelay = 2000;
 
   while (attempt < maxAttempts) {
     try {
       const response = await axios.get(`https://opentdb.com/api.php?amount=10`);
-      cache = response.data.results; // Store in cache
+      cache = response.data.results;
       return response.data.results;
     } catch (error) {
       if (axios.isAxiosError(error) && error.response?.status === 429) {
@@ -31,7 +31,7 @@ const fetchQuestion = async (): Promise<Question[]> => {
         );
         await new Promise((resolve) =>
           setTimeout(resolve, retryDelay * (attempt + 1))
-        ); // Exponential backoff
+        );
       } else {
         console.error("Error fetching the question:", error);
         throw error;

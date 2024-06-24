@@ -11,12 +11,15 @@ import {
 } from "@mantine/core";
 import { useEffect, useState } from "react";
 import fetchQuestion, { Question } from "../store/api";
+import Result from "./Result";
 
 export function Card(props: PaperProps) {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [question, setQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | boolean>();
-  const [seconds, setSeconds] = useState(5);
+  const [selectedAnswer, setSelectedAnswer] = useState<string[]>([]);
+  const [seconds, setSeconds] = useState(30);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [quizCompleted, setQuizCompleted] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,12 +37,10 @@ export function Card(props: PaperProps) {
     fetchQuestions();
   }, []);
 
-  console.log(questions, "This");
-
   useEffect(() => {
     if (seconds === 0) {
       handleNextQuestion();
-      setSeconds(30); // Reset timer for next question
+      setSeconds(30);
     }
 
     const timer = setInterval(() => {
@@ -47,13 +48,21 @@ export function Card(props: PaperProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [seconds]);
+  }, [question, seconds]);
 
   const handleNextQuestion = () => {
-    setQuestion((prev) => (prev + 1) % questions.length);
+    if (question !== 10) {
+      setQuestion((prev) => (prev + 1) % questions.length);
+      setQuestionCount((prev) => prev + 1);
+      setSeconds(0);
+    } else {
+      setQuestionCount(10);
+      setQuizCompleted;
+      setSeconds(0);
+    }
   };
 
-  const handleAnswerChange = (answer: string) => {
+  const handleAnswerChange = (answer: string[]) => {
     setSelectedAnswer(answer);
     console.log(answer);
   };
@@ -68,6 +77,10 @@ export function Card(props: PaperProps) {
     return <div>No questions available.</div>;
   }
 
+  if (quizCompleted) {
+    return <Result questions={questions} answers={selectedAnswer} />;
+  }
+
   const options =
     currentQuestion.type === "boolean"
       ? ["True", "False"]
@@ -79,7 +92,7 @@ export function Card(props: PaperProps) {
   return (
     <>
       <Title order={1} mt={90} ta="center">
-        Trivia Quiz
+        Trivia Quiz {questionCount}
       </Title>
       <Paper w={500} m={"auto"} radius="md" p="xl" withBorder {...props}>
         <Text>{currentQuestion.question}</Text>
@@ -122,7 +135,7 @@ export function Card(props: PaperProps) {
         <Group justify="end" mt="xl">
           <Text>{seconds}</Text>
           <Button type="submit" radius="xl" onClick={handleNextQuestion}>
-            Next
+            {question !== 5 ? "Next" : "Submit"}
           </Button>
         </Group>
       </Paper>
